@@ -8,26 +8,40 @@
 import Foundation
 
 struct SetGameModel {
-    private var cards: Array<Card> = []
+    enum CardElementShape: CaseIterable {
+        case rectangle
+        case circle
+        case diamond
+    }
     
-    struct Card {
-        var shape: String
-        var color: String
+    enum CardElementColor: CaseIterable {
+        case red
+        case green
+        case blue
+    }
+    
+    enum CardElementShade: CaseIterable {
+        case filled
+        case partial
+        case empty
+    }
+    
+    private(set) var cards: Array<Card> = []
+    
+    struct Card: Identifiable {
+        var shape: CardElementShape
+        var color: CardElementColor
         var count: Int
-        var shade: Shade
+        var shade: CardElementShade
         
-        enum Shade: Double, CaseIterable {
-            case filled = 1
-            case partiallyFilled = 0.3
-            case empty = 0
-        }
+        var id: String { "\(shape):\(color):\(count):\(shade)"}
     }
     
     init(){
         for count in 1...3 {
-            for shade in Card.Shade.allCases {
-                for color in ["red", "green", "blue"] {
-                    for shape in ["rectangle", "circle", "square"] {
+            for shape in CardElementShape.allCases {
+                for color in CardElementColor.allCases {
+                    for shade in CardElementShade.allCases {
                         cards.append(Card(shape: shape, color: color, count: count, shade: shade))
                     }
                 }
