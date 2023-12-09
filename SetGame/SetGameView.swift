@@ -21,11 +21,7 @@ struct SetGameView: View {
 }
 
 
-enum Shade: Double {
-    case filled = 1
-    case partiallyFilled = 0.3
-    case empty = 0
-}
+
 
 struct CardView<ItemShape: Shape>: View {
     let shape: ItemShape
