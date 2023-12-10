@@ -11,10 +11,13 @@ struct SetGameView: View {
     @ObservedObject var viewModel: SetGameViewModel
     
     var body: some View {
-        AspectVGrid(viewModel.cards, aspectRatio: 2/3) { card in
+        AspectVGrid(viewModel.openCards, aspectRatio: 2/3) { card in
             CardView(card: card)
-                .padding(4)
-        }
+                .padding(8)
+                .onTapGesture {
+                    viewModel.choose(card)
+                }
+        }.padding()
     }
 }
 
@@ -23,10 +26,10 @@ struct CardView: View {
     
     private var elementColor: Color {
         switch card.color {
-        case .red:
-            Color.red
-        case .green:
-            Color.green
+        case .yellow:
+            Color.yellow
+        case .purple:
+            Color.purple
         case .blue:
             Color.blue
         }
@@ -45,14 +48,26 @@ struct CardView: View {
     private func applyShade<CardElementShape: Shape>(_ shade:SetGameModel.CardElementShade, to shape: CardElementShape) -> some View {
         switch shade {
         case .empty: shape.stroke()
-        case .partial: shape.fill().opacity(0.5)
+        case .partial: shape.fill().opacity(0.3)
         case .filled: shape.fill()
         }
     }
     
     var body: some View {
+        var backgroundColor: Color {
+            switch card.matched {
+            case .unmatched: Color.white
+            case .matched: Color.green.opacity(0.2)
+            case .incorrectlyMatched: Color.red.opacity(0.2)
+            }
+        }
         ZStack {
-            RoundedRectangle(cornerRadius: 12).stroke()
+            RoundedRectangle(cornerRadius: 12)
+                .stroke()
+                .foregroundColor(card.isSelected ? .blue : .black)
+                .background(
+                    backgroundColor
+                )
             VStack() {
                 ForEach(0..<card.count, id: \.self) { _ in
                     drawShape(card.shape, shade: card.shade)
@@ -63,6 +78,7 @@ struct CardView: View {
             .padding(10)
         }
         .aspectRatio(2/3, contentMode: .fill)
+
     }
 }
 
