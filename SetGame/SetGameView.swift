@@ -19,11 +19,20 @@ struct SetGameView: View {
                         viewModel.choose(card)
                     }
                     .animation(.default, value: viewModel.openCards)
-            }.padding().animation(.default, value: viewModel.openCards)
-            Button("Draw") {
-                viewModel.drawCards()
-            }.disabled(viewModel.allCardsDealt)
-        }
+            }.animation(.default, value: viewModel.openCards)
+            HStack {
+                Button("Draw Three") {
+                    viewModel.drawCards()
+                }
+                .disabled(viewModel.allCardsDealt)
+                .padding()
+                Button("New Game") {
+                    viewModel.newGame()
+                }
+                .padding()
+            }
+            
+        }.padding()
     }
 }
 
