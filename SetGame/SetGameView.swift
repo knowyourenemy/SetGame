@@ -11,13 +11,19 @@ struct SetGameView: View {
     @ObservedObject var viewModel: SetGameViewModel
     
     var body: some View {
-        AspectVGrid(viewModel.openCards, aspectRatio: 2/3) { card in
-            CardView(card: card)
-                .padding(8)
-                .onTapGesture {
-                    viewModel.choose(card)
-                }
-        }.padding()
+        VStack {
+            AspectVGrid(viewModel.openCards, aspectRatio: 2/3) { card in
+                CardView(card: card)
+                    .padding(8)
+                    .onTapGesture {
+                        viewModel.choose(card)
+                    }
+                    .animation(.default, value: viewModel.openCards)
+            }.padding().animation(.default, value: viewModel.openCards)
+            Button("Draw") {
+                viewModel.drawCards()
+            }.disabled(viewModel.allCardsDealt)
+        }
     }
 }
 
@@ -65,9 +71,7 @@ struct CardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke()
                 .foregroundColor(card.isSelected ? .blue : .black)
-                .background(
-                    backgroundColor
-                )
+                .background(RoundedRectangle(cornerRadius: 12).fill(backgroundColor))
             VStack() {
                 ForEach(0..<card.count, id: \.self) { _ in
                     drawShape(card.shape, shade: card.shade)

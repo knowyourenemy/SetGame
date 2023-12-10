@@ -13,12 +13,20 @@ class SetGameViewModel: ObservableObject {
     var openCards: Array<SetGameModel.Card> {
         return model.openCards
     }
+    
+    var allCardsDealt: Bool {
+        return model.remainingCards.isEmpty
+    }
 
     
     // MARK: - Intents
     
     func choose(_ card: SetGameModel.Card) {
         model.choose(card)
+    }
+    
+    func drawCards() {
+        model.drawCards()
     }
 }
 

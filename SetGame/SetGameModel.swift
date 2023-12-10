@@ -32,7 +32,7 @@ struct SetGameModel {
         case incorrectlyMatched
     }
     
-    private var remainingCards: Array<Card> = []
+    private(set) var remainingCards: Array<Card> = []
     private(set) var openCards: Array<Card> = []
     
     private let initialCardCount = 12
@@ -71,7 +71,11 @@ struct SetGameModel {
                 openCards[selectedCardIndex!].isSelected = false
                 switch selectedCard.matched {
                 case .incorrectlyMatched: openCards[selectedCardIndex!].matched = .unmatched
-                case .matched: openCards.remove(at: selectedCardIndex!)
+                case .matched: 
+                    openCards.remove(at: selectedCardIndex!)
+                    if !remainingCards.isEmpty {
+                        openCards.append(remainingCards.removeLast())
+                    }
                 case .unmatched: break
                 }
             }
@@ -79,7 +83,9 @@ struct SetGameModel {
         }
         
         let chosenCardIndex = openCards.firstIndex(of: card)
-        openCards[chosenCardIndex!].isSelected.toggle()
+        if let chosenCardIndex = chosenCardIndex {
+            openCards[chosenCardIndex].isSelected.toggle()
+        }
         
         selectedCards = openCards.filter { card in
             card.isSelected
@@ -107,9 +113,14 @@ struct SetGameModel {
                 // Successful match
                 setMatchedForCardsIn(selectedCards, to: .matched)
             }
-            
-            
-            
+        }
+    }
+    
+    mutating func drawCards() {
+        for _ in 0..<3 {
+            if !remainingCards.isEmpty {
+                openCards.append(remainingCards.removeLast())
+            }
         }
     }
     
@@ -123,6 +134,10 @@ struct SetGameModel {
         var matched: CardMatchedState = .unmatched
         
         var id: String { "\(shape):\(color):\(count):\(shade)"}
+        
+        static func == (lhs: Card, rhs: Card) -> Bool {
+                return lhs.id == rhs.id
+            }
         
         var debugDescription: String { id }
     }
