@@ -17,7 +17,6 @@ class SetGameViewModel: ObservableObject {
     var allCardsDealt: Bool {
         return model.remainingCards.isEmpty
     }
-
     
     // MARK: - Intents
     

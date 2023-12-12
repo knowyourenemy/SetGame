@@ -54,7 +54,7 @@ struct CardView: View {
     private func drawShape(_ shape: SetGameModel.CardElementShape, shade: SetGameModel.CardElementShade) -> some View {
         switch shape {
         case .circle: applyShade(shade, to: Circle())
-        case .diamond: applyShade(shade, to: Rectangle())
+        case .diamond: applyShade(shade, to: Diamond())
         case .rectangle: applyShade(shade, to: RoundedRectangle(cornerRadius: /*@START_MENU_TOKEN@*/25.0/*@END_MENU_TOKEN@*/))
         }
     }
