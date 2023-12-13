@@ -14,25 +14,73 @@ struct SetGameView: View {
         VStack {
             AspectVGrid(viewModel.openCards, aspectRatio: 2/3) { card in
                 CardView(card: card)
+                    .matchedGeometryEffect(id: card.id, in: dealingNamespace)
+                    .transition(.asymmetric(insertion: .identity, removal: .identity))
                     .padding(8)
                     .onTapGesture {
                         viewModel.choose(card)
                     }
-                    .animation(.default, value: viewModel.openCards)
-            }.animation(.default, value: viewModel.openCards)
+            }
             HStack {
-                Button("Draw Three") {
-                    viewModel.drawCards()
-                }
-                .disabled(viewModel.allCardsDealt)
+                drawingDeck
+//                Button("Draw Three") {
+//                    withAnimation {
+//                        viewModel.drawCards()
+//                    }
+//                }
+//                .disabled(viewModel.allCardsDealt)
                 .padding()
                 Button("New Game") {
-                    viewModel.newGame()
+                    withAnimation {
+                        viewModel.newGame()
+                    }
                 }
                 .padding()
             }
             
         }.padding()
+    }
+    
+//    @State private var discardedCards = viewModel.
+//    
+//    private func isDiscarded(_ card: SetGameModel.Card) -> Bool {
+//        dealt.contains(card.id)
+//    }
+//    private var undealtCards: [SetGameModel.Card] {
+//        viewModel.openCards.filter { !isDealt($0) }
+//    }
+    @Namespace private var dealingNamespace
+    
+//    private var discardDeck: some View {
+//        ZStack {
+//            ForEach(viewModel.){ undealtCard in
+//                CardView(card: undealtCard)
+//                    .matchedGeometryEffect(id: undealtCard.id, in: dealingNamespace)
+//                    .transition(.asymmetric(insertion: .identity, removal: .identity))
+//            }
+//        }
+//        .frame(width: 50.0, height: 50.0 / (2/3))
+//        .onTapGesture {
+//            withAnimation {
+//                viewModel.drawCards()
+//            }
+//        }
+//    }
+    
+    private var drawingDeck: some View {
+        ZStack {
+            ForEach(viewModel.undealtCards){ undealtCard in
+                CardView(card: undealtCard)
+                    .matchedGeometryEffect(id: undealtCard.id, in: dealingNamespace)
+                    .transition(.asymmetric(insertion: .identity, removal: .identity))
+            }
+        }
+        .frame(width: 50.0, height: 50.0 / (2/3))
+        .onTapGesture {
+            withAnimation {
+                viewModel.drawCards()
+            }
+        }
     }
 }
 
