@@ -117,11 +117,26 @@ struct SetGameModel {
     }
     
     mutating func drawCards() {
-        for _ in 0..<3 {
-            if !remainingCards.isEmpty {
-                openCards.append(remainingCards.removeLast())
+        let selectedCards = openCards.filter { card in
+            card.isSelected
+        }
+        if selectedCards.count == 3 && selectedCards.allSatisfy({ selectedCard in
+            selectedCard.matched == .matched
+        }) {
+            for selectedCard in selectedCards {
+                let selectedCardIndex = openCards.firstIndex(of: selectedCard)
+                if let selectedCardIndex = selectedCardIndex {
+                    openCards[selectedCardIndex] = remainingCards.removeLast()
+                }
+            }
+        } else {
+            for _ in 0..<3 {
+                if !remainingCards.isEmpty {
+                    openCards.append(remainingCards.removeLast())
+                }
             }
         }
+        
     }
     
     struct Card: Identifiable, Equatable, CustomDebugStringConvertible {
