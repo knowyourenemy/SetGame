@@ -32,11 +32,19 @@ struct SetGameModel {
         case incorrectlyMatched
     }
     
-    private(set) var remainingCards: Array<Card> = []
-    private(set) var openCards: Array<Card> = []
-    private(set) var discardedCards: Array<Card> = []
+    enum CardDealtState {
+        case undealt
+        case dealt
+        case discarded
+    }
+    
+//    private(set) var remainingCards: Array<Card> = []
+//    private(set) var openCards: Array<Card> = []
+//    private(set) var discardedCards: Array<Card> = []
+    private(set) var cards: Array<Card> = []
     
     private let initialCardCount = 12
+    private var currentDealtIndex = 0
     
     
     init(){
@@ -44,40 +52,45 @@ struct SetGameModel {
             for shape in CardElementShape.allCases {
                 for color in CardElementColor.allCases {
                     for shade in CardElementShade.allCases {
-                        remainingCards.append(Card(shape: shape, color: color, count: count, shade: shade))
+                        cards.append(Card(shape: shape, color: color, count: count, shade: shade))
                     }
                 }
             }
         }
-        remainingCards.shuffle()
-        for _ in 0..<initialCardCount {
-            openCards.append(remainingCards.removeLast())
+        cards.shuffle()
+        for cardIndex in 0..<initialCardCount {
+            cards[cardIndex].dealt = .dealt
+            currentDealtIndex += 1
         }
     }
     
-    mutating func setMatchedForCardsIn(_ cards: Array<Card>, to newMatchedValue: CardMatchedState) {
-        for card in cards {
-            let cardIndex = openCards.firstIndex(of: card)
-            openCards[cardIndex!].matched = newMatchedValue
+    mutating func setMatchedForCardsIn(_ selectedCards: Array<Card>, to newMatchedValue: CardMatchedState) {
+        for card in selectedCards {
+            let cardIndex = cards.firstIndex(of: card)
+            cards[cardIndex!].matched = newMatchedValue
         }
     }
     
     mutating func choose(_ card: Card){
-        var selectedCards = openCards.filter { card in
+        var selectedCards = cards.filter { card in
             card.isSelected
         }
         if selectedCards.count >= 3 {
             for selectedCard in selectedCards {
-                let selectedCardIndex = openCards.firstIndex(of: selectedCard)
-                openCards[selectedCardIndex!].isSelected = false
+                let selectedCardIndex = cards.firstIndex(of: selectedCard)
+                cards[selectedCardIndex!].isSelected = false
                 switch selectedCard.matched {
-                case .incorrectlyMatched: openCards[selectedCardIndex!].matched = .unmatched
+                case .incorrectlyMatched: cards[selectedCardIndex!].matched = .unmatched
                 case .matched:
-                    if !remainingCards.isEmpty {
-                        discardedCards.append(openCards[selectedCardIndex!])
-                        openCards[selectedCardIndex!] = (remainingCards.removeLast())
+                    if currentDealtIndex < cards.count {
+                        cards[selectedCardIndex!].dealt = .discarded
+                        cards[currentDealtIndex].dealt = .dealt
+                        cards.swapAt(selectedCardIndex!, currentDealtIndex)
+                        currentDealtIndex += 1
+//                        discardedCards.append(openCards[selectedCardIndex!])
+//                        openCards[selectedCardIndex!] = (remainingCards.removeLast())
                     }   else {
-                        discardedCards.append(openCards.remove(at: selectedCardIndex!))
+                        cards[selectedCardIndex!].dealt = .discarded
                     }
                 case .unmatched: break
                 }
@@ -85,12 +98,12 @@ struct SetGameModel {
             selectedCards = []
         }
         
-        let chosenCardIndex = openCards.firstIndex(of: card)
+        let chosenCardIndex = cards.firstIndex(of: card)
         if let chosenCardIndex = chosenCardIndex {
-            openCards[chosenCardIndex].isSelected.toggle()
+            cards[chosenCardIndex].isSelected.toggle()
         }
         
-        selectedCards = openCards.filter { card in
+        selectedCards = cards.filter { card in
             card.isSelected
         }
 
@@ -120,23 +133,31 @@ struct SetGameModel {
     }
     
     mutating func drawCards() {
-        let selectedCards = openCards.filter { card in
+        print("hellp?")
+        let selectedCards = cards.filter { card in
             card.isSelected
         }
         if selectedCards.count == 3 && selectedCards.allSatisfy({ selectedCard in
             selectedCard.matched == .matched
         }) {
             for selectedCard in selectedCards {
-                let selectedCardIndex = openCards.firstIndex(of: selectedCard)
+                let selectedCardIndex = cards.firstIndex(of: selectedCard)
                 if let selectedCardIndex = selectedCardIndex {
-                    discardedCards.append(openCards[selectedCardIndex])
-                    openCards[selectedCardIndex] = remainingCards.removeLast()
+                    cards[selectedCardIndex].isSelected = false
+                    if currentDealtIndex < cards.count {
+                        cards[selectedCardIndex].dealt = .discarded
+                        cards[currentDealtIndex].dealt = .dealt
+                        cards.swapAt(selectedCardIndex, currentDealtIndex)
+                        currentDealtIndex += 1
+                    }
                 }
             }
         } else {
             for _ in 0..<3 {
-                if !remainingCards.isEmpty {
-                    openCards.append(remainingCards.removeLast())
+                if currentDealtIndex < cards.count {
+                    cards[currentDealtIndex].dealt = .dealt
+                    currentDealtIndex += 1
+                    print(currentDealtIndex)
                 }
             }
         }
@@ -151,6 +172,7 @@ struct SetGameModel {
         
         var isSelected: Bool = false
         var matched: CardMatchedState = .unmatched
+        var dealt: CardDealtState = .undealt
         
         var id: String { "\(shape):\(color):\(count):\(shade)"}
         

@@ -24,8 +24,9 @@ struct SetGameView: View {
                     .animation(.scaleUpDown(duration: 0.5), value: card.matched)
                     .scaleEffect(card.matched == .matched ? 1 : 1)
                     .onTapGesture {
-
+                        withAnimation {
                             viewModel.choose(card)
+                        }
 
                     }
             }
@@ -70,6 +71,7 @@ struct SetGameView: View {
         .onTapGesture {
             withAnimation {
                 viewModel.drawCards()
+                
             }
         }
     }

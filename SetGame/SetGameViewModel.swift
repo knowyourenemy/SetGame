@@ -11,19 +11,21 @@ class SetGameViewModel: ObservableObject {
     @Published private var model = SetGameModel()
     
     var openCards: Array<SetGameModel.Card> {
-        return model.openCards
+        return model.cards.filter { card in
+            card.dealt == .dealt
+        }
     }
     
     var undealtCards: Array<SetGameModel.Card>{
-        return model.remainingCards
+        return model.cards.filter { card in
+            card.dealt == .undealt
+        }
     }
     
     var discardedCards: Array<SetGameModel.Card>{
-        return model.discardedCards
-    }
-    
-    var allCardsDealt: Bool {
-        return model.remainingCards.isEmpty
+        return model.cards.filter { card in
+            card.dealt == .discarded
+        }
     }
     
     // MARK: - Intents
