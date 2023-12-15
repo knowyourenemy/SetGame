@@ -34,6 +34,7 @@ struct SetGameModel {
     
     private(set) var remainingCards: Array<Card> = []
     private(set) var openCards: Array<Card> = []
+    private(set) var discardedCards: Array<Card> = []
     
     private let initialCardCount = 12
     
@@ -71,10 +72,12 @@ struct SetGameModel {
                 openCards[selectedCardIndex!].isSelected = false
                 switch selectedCard.matched {
                 case .incorrectlyMatched: openCards[selectedCardIndex!].matched = .unmatched
-                case .matched: 
-                    openCards.remove(at: selectedCardIndex!)
+                case .matched:
                     if !remainingCards.isEmpty {
-                        openCards.append(remainingCards.removeLast())
+                        discardedCards.append(openCards[selectedCardIndex!])
+                        openCards[selectedCardIndex!] = (remainingCards.removeLast())
+                    }   else {
+                        discardedCards.append(openCards.remove(at: selectedCardIndex!))
                     }
                 case .unmatched: break
                 }
@@ -126,6 +129,7 @@ struct SetGameModel {
             for selectedCard in selectedCards {
                 let selectedCardIndex = openCards.firstIndex(of: selectedCard)
                 if let selectedCardIndex = selectedCardIndex {
+                    discardedCards.append(openCards[selectedCardIndex])
                     openCards[selectedCardIndex] = remainingCards.removeLast()
                 }
             }

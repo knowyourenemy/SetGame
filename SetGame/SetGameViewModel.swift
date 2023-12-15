@@ -18,6 +18,10 @@ class SetGameViewModel: ObservableObject {
         return model.remainingCards
     }
     
+    var discardedCards: Array<SetGameModel.Card>{
+        return model.discardedCards
+    }
+    
     var allCardsDealt: Bool {
         return model.remainingCards.isEmpty
     }
