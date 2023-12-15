@@ -15,73 +15,90 @@ struct SetGameView: View {
             AspectVGrid(viewModel.openCards, aspectRatio: 2/3) { card in
                 CardView(card: card)
                     .matchedGeometryEffect(id: card.id, in: dealingNamespace)
+                    .matchedGeometryEffect(id: card.id, in: discardingNamespace)
                     .transition(.asymmetric(insertion: .identity, removal: .identity))
                     .padding(8)
+                    .rotationEffect(.degrees(card.matched == .matched ? 360 : 0))
+                    .animation(.spin(duration: 1), value: card.matched)
+                    .scaleEffect(card.matched == .incorrectlyMatched ? 1.05 : 1)
+                    .animation(.scaleUpDown(duration: 0.5), value: card.matched)
+                    .scaleEffect(card.matched == .matched ? 1 : 1)
                     .onTapGesture {
-                        viewModel.choose(card)
+
+                            viewModel.choose(card)
+
                     }
             }
             HStack {
                 drawingDeck
-//                Button("Draw Three") {
-//                    withAnimation {
-//                        viewModel.drawCards()
-//                    }
-//                }
-//                .disabled(viewModel.allCardsDealt)
-                .padding()
+                    .padding()
                 Button("New Game") {
                     withAnimation {
                         viewModel.newGame()
                     }
                 }
                 .padding()
+                discardingDeck
+                    .padding()
             }
             
         }.padding()
     }
     
-//    @State private var discardedCards = viewModel.
-//    
-//    private func isDiscarded(_ card: SetGameModel.Card) -> Bool {
-//        dealt.contains(card.id)
-//    }
-//    private var undealtCards: [SetGameModel.Card] {
-//        viewModel.openCards.filter { !isDealt($0) }
-//    }
-    @Namespace private var dealingNamespace
     
-//    private var discardDeck: some View {
-//        ZStack {
-//            ForEach(viewModel.){ undealtCard in
-//                CardView(card: undealtCard)
-//                    .matchedGeometryEffect(id: undealtCard.id, in: dealingNamespace)
-//                    .transition(.asymmetric(insertion: .identity, removal: .identity))
-//            }
-//        }
-//        .frame(width: 50.0, height: 50.0 / (2/3))
-//        .onTapGesture {
-//            withAnimation {
-//                viewModel.drawCards()
-//            }
-//        }
-//    }
+    @Namespace private var dealingNamespace
+    @Namespace private var discardingNamespace
     
     private var drawingDeck: some View {
         ZStack {
             ForEach(viewModel.undealtCards){ undealtCard in
                 CardView(card: undealtCard)
                     .matchedGeometryEffect(id: undealtCard.id, in: dealingNamespace)
-                    .transition(.asymmetric(insertion: .identity, removal: .identity))
+                    .transition(.asymmetric(insertion: .identity, removal: .opacity))
+                    
             }
         }
-        .frame(width: 50.0, height: 50.0 / (2/3))
+        .frame(width: 80.0, height: 80.0 / (2/3))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.white)
+                .strokeBorder(lineWidth: 2)
+                .overlay(Text("Draw Pile")
+                    .multilineTextAlignment(.center)
+                )
+        )
         .onTapGesture {
             withAnimation {
                 viewModel.drawCards()
             }
         }
     }
+    
+    private var discardingDeck: some View {
+        ZStack {
+            ForEach(viewModel.discardedCards){ discardedCard in
+                CardView(card: discardedCard)
+                    .matchedGeometryEffect(id: discardedCard.id, in: discardingNamespace)
+                    .transition(.asymmetric(insertion: .identity, removal: .identity))
+                    .overlay(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+        .frame(width: 80.0, height: 80.0 / (2/3))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.white)
+                .strokeBorder(lineWidth: 2)
+                .overlay(Text("Discard Pile")
+                    .multilineTextAlignment(.center)
+                )
+        )
+        .onTapGesture {
+            withAnimation {
+                viewModel.drawCards()
+            }
+        }
+    }
+    
 }
 
 struct CardView: View {
@@ -139,9 +156,22 @@ struct CardView: View {
             .padding(10)
         }
         .aspectRatio(2/3, contentMode: .fill)
-
+        
     }
 }
+
+extension Animation {
+    static func spin(duration: TimeInterval) -> Animation {
+        .spring(duration: duration, bounce: 0.5)
+    }
+    
+    static func scaleUpDown(duration: TimeInterval) -> Animation {
+        .linear(duration: duration).repeatCount(2, autoreverses: true)
+    }
+    
+    
+}
+
 
 #Preview {
     SetGameView(viewModel: SetGameViewModel())
